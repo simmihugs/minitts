@@ -173,7 +173,6 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-
 # Exclude large files
 voices/v1_0/*.pt
 models/v1_0/*.pth

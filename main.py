@@ -3,49 +3,50 @@ import soundfile as sf
 import numpy as np
 import torch
 
-model_config_path = "models/v1_0/config.json"
-model_pth_path = "models/v1_0/kokoro-v1_0.pth"
-voice_path = "voices/v1_0/am_adam.pt"
-output_audio_path = "output.wav"
+MODEL_CONFIG_PATH = "models/v1_0/config.json"
+MODEL_PTH_PATH = "models/v1_0/kokoro-v1_0.pth"
+VOICE_PATH = "voices/v1_0/am_adam.pt"
+LANGUAGE_CODE = "a"
+SAMPLE_RATE = 24000
 
-text_to_synthesize = "I am just a dreamer! I dream my live away... tam tam"
-language_code = "a"
-sample_rate = 24000
 
-try:
-    # 1. Load the KModel
-    model = KModel(config=model_config_path, model=model_pth_path).eval().cpu()
+def main(
+    output_audio_path="output.wav",
+    text_to_synthesize="I am just a dreamer! I dream my live away... tam tam",
+):
 
-    # 2. Create a KPipeline
-    pipeline = KPipeline(lang_code=language_code, model=model, device="cpu")
+    try:
+        model = KModel(config=MODEL_CONFIG_PATH, model=MODEL_PTH_PATH).eval().cpu()
+        pipeline = KPipeline(lang_code=LANGUAGE_CODE, model=model, device="cpu")
+        audio_segments = []
+        for result in pipeline(text_to_synthesize, voice=VOICE_PATH):
+            if (
+                hasattr(result, "output")
+                and hasattr(result.output, "audio")
+                and isinstance(result.output.audio, torch.Tensor)
+            ):
+                audio_numpy = result.output.audio.cpu().numpy()
+                audio_segments.append(audio_numpy)
+                print(f"Appended audio chunk with shape: {audio_numpy.shape}")
+            else:
+                print(
+                    f"Warning: Result object does not contain expected audio tensor: {result}"
+                )
 
-    # 3. Run Generation and Collect Audio
-    audio_segments = []
-    for result in pipeline(text_to_synthesize, voice=voice_path):
-        if (
-            hasattr(result, "output")
-            and hasattr(result.output, "audio")
-            and isinstance(result.output.audio, torch.Tensor)
-        ):
-            audio_numpy = result.output.audio.cpu().numpy()
-            audio_segments.append(audio_numpy)
-            print(f"Appended audio chunk with shape: {audio_numpy.shape}")
+        if audio_segments:
+            full_audio = np.concatenate(audio_segments, axis=0)
+            print(f"Generated full audio with shape: {full_audio.shape}")
+
+            sf.write(output_audio_path, full_audio, SAMPLE_RATE)
+            print(f"Audio saved successfully to: {output_audio_path}")
         else:
-            print(
-                f"Warning: Result object does not contain expected audio tensor: {result}"
-            )
+            print("Error: No usable audio data received from the pipeline.")
 
-    if audio_segments:
-        full_audio = np.concatenate(audio_segments, axis=0)
-        print(f"Generated full audio with shape: {full_audio.shape}")
+    except FileNotFoundError as e:
+        print(f"Error: File not found - {e}")
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
-        # 4. Save the audio to a .wav file
-        sf.write(output_audio_path, full_audio, sample_rate)
-        print(f"Audio saved successfully to: {output_audio_path}")
-    else:
-        print("Error: No usable audio data received from the pipeline.")
 
-except FileNotFoundError as e:
-    print(f"Error: File not found - {e}")
-except Exception as e:
-    print(f"An error occurred: {e}")
+if __name__ == "__main__":
+    main()
