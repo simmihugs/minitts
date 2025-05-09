@@ -1,3 +1,4 @@
+import sys
 from kokoro import KModel, KPipeline
 import soundfile as sf
 import numpy as np
@@ -10,16 +11,15 @@ LANGUAGE_CODE = "a"
 SAMPLE_RATE = 24000
 
 
-def main(
-    output_audio_path="output.wav",
-    text_to_synthesize="I am just a dreamer! I dream my live away... tam tam",
-):
-
+def mini_kokoro_tts(output_path: str, text: str):
+    """
+    Creates an audio from given text and stores as wav.
+    """
     try:
         model = KModel(config=MODEL_CONFIG_PATH, model=MODEL_PTH_PATH).eval().cpu()
         pipeline = KPipeline(lang_code=LANGUAGE_CODE, model=model, device="cpu")
         audio_segments = []
-        for result in pipeline(text_to_synthesize, voice=VOICE_PATH):
+        for result in pipeline(text, voice=VOICE_PATH):
             if (
                 hasattr(result, "output")
                 and hasattr(result.output, "audio")
@@ -37,8 +37,8 @@ def main(
             full_audio = np.concatenate(audio_segments, axis=0)
             print(f"Generated full audio with shape: {full_audio.shape}")
 
-            sf.write(output_audio_path, full_audio, SAMPLE_RATE)
-            print(f"Audio saved successfully to: {output_audio_path}")
+            sf.write(output_path, full_audio, SAMPLE_RATE)
+            print(f"Audio saved successfully to: {output_path}")
         else:
             print("Error: No usable audio data received from the pipeline.")
 
@@ -49,4 +49,6 @@ def main(
 
 
 if __name__ == "__main__":
-    main()
+    print("asdf")
+    if len(sys.argv) > 2:
+        mini_kokoro_tts(text=f"{sys.argv[2]}", output_path="")

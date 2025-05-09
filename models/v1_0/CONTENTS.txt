@@ -1,0 +1,5 @@
+  /mnt/d/kokostreamy/models/v1_0:
+  drwxrwxrwx 1 simmi simmi      4096 May  9 19:08 .
+  drwxrwxrwx 1 simmi simmi      4096 May  9 18:09 ..
+  -rwxrwxrwx 1 simmi simmi      2351 May  9 19:08 config.json
+  -rwxrwxrwx 1 simmi simmi 327212226 May  9 18:09 kokoro-v1_0.pth
