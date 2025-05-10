@@ -1,3 +1,7 @@
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="torch")
+warnings.filterwarnings("ignore", category=FutureWarning, module="torch")
+
 from kokoro import KModel, KPipeline
 import soundfile as sf
 import numpy as np
@@ -9,19 +13,25 @@ MODEL_PTH_PATH = "/home/simmi/Projects/minitts/models/v1_0/kokoro-v1_0.pth"
 VOICE_PATH = "/home/simmi/Projects/minitts/voices/v1_0/am_adam.pt"
 LANGUAGE_CODE = "a"
 SAMPLE_RATE = 24000
+REPO_ID = 'hexgrad/Kokoro-82M'
 
 
-def mini_kokoro_tts(output_path: str, text: str):
+def mini_kokoro_tts(output_path: str, text: str, debug: bool = False):
     """
     Creates an audio from given text and stores as wav.
     """
     try:
-        print("Load model")
-        model = KModel(config=MODEL_CONFIG_PATH, model=MODEL_PTH_PATH).eval().cpu()
-        print("Estabilsh pipeline")
-        pipeline = KPipeline(lang_code=LANGUAGE_CODE, model=model, device="cpu")
+        if debug:
+            print("Load model")
+        model = KModel(config=MODEL_CONFIG_PATH, model=MODEL_PTH_PATH, repo_id=REPO_ID).eval().cpu()
+
+        if debug:
+            print("Estabilsh pipeline")
+        pipeline = KPipeline(lang_code=LANGUAGE_CODE, model=model, device="cpu", repo_id=REPO_ID)
         audio_segments = []
-        print("Create audio")
+
+        if debug:
+            print("Create audio")
         for result in pipeline(text, voice=VOICE_PATH):
             if (
                 hasattr(result, "output")
@@ -30,25 +40,30 @@ def mini_kokoro_tts(output_path: str, text: str):
             ):
                 audio_numpy = result.output.audio.cpu().numpy()
                 audio_segments.append(audio_numpy)
-                print(f"Appended audio chunk with shape: {audio_numpy.shape}")
+                if debug:
+                    print(f"Appended audio chunk with shape: {audio_numpy.shape}")
             else:
-                print(
-                    f"Warning: Result object does not contain expected audio tensor: {result}"
-                )
-
+                if debug: 
+                    print(
+                        f"Warning: Result object does not contain expected audio tensor: {result}"
+                    )
         if audio_segments:
             full_audio = np.concatenate(audio_segments, axis=0)
-            print(f"Generated full audio with shape: {full_audio.shape}")
+            if debug:
+                print(f"Generated full audio with shape: {full_audio.shape}")
 
             sf.write(output_path, full_audio, SAMPLE_RATE)
-            print(f"Audio saved successfully to: {output_path}")
+            if debug:
+                print(f"Audio saved successfully to: {output_path}")
         else:
-            print("Error: No usable audio data received from the pipeline.")
-
+            if debug:
+                print("Error: No usable audio data received from the pipeline.")
     except FileNotFoundError as e:
-        print(f"Error: File not found - {e}")
+        if debug:
+            print(f"Error: File not found - {e}")
     except Exception as e:
-        print(f"An error occurred: {e}")
+        if debug:
+            print(f"An error occurred: {e}")
 
 def main():
     parser = argparse.ArgumentParser(description="Text to speech tooly")
