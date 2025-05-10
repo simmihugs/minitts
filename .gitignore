@@ -177,4 +177,4 @@ cython_debug/
 voices/v1_0/*.pt
 models/v1_0/*.pth
 venv/
-output.wav
+*.wav

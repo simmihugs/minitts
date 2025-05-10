@@ -1,12 +1,12 @@
-import sys
 from kokoro import KModel, KPipeline
 import soundfile as sf
 import numpy as np
 import torch
+import argparse
 
-MODEL_CONFIG_PATH = "models/v1_0/config.json"
-MODEL_PTH_PATH = "models/v1_0/kokoro-v1_0.pth"
-VOICE_PATH = "voices/v1_0/am_adam.pt"
+MODEL_CONFIG_PATH = "/home/simmi/Projects/minitts/models/v1_0/config.json"
+MODEL_PTH_PATH = "/home/simmi/Projects/minitts/models/v1_0/kokoro-v1_0.pth"
+VOICE_PATH = "/home/simmi/Projects/minitts/voices/v1_0/am_adam.pt"
 LANGUAGE_CODE = "a"
 SAMPLE_RATE = 24000
 
@@ -16,9 +16,12 @@ def mini_kokoro_tts(output_path: str, text: str):
     Creates an audio from given text and stores as wav.
     """
     try:
+        print("Load model")
         model = KModel(config=MODEL_CONFIG_PATH, model=MODEL_PTH_PATH).eval().cpu()
+        print("Estabilsh pipeline")
         pipeline = KPipeline(lang_code=LANGUAGE_CODE, model=model, device="cpu")
         audio_segments = []
+        print("Create audio")
         for result in pipeline(text, voice=VOICE_PATH):
             if (
                 hasattr(result, "output")
@@ -47,8 +50,12 @@ def mini_kokoro_tts(output_path: str, text: str):
     except Exception as e:
         print(f"An error occurred: {e}")
 
+def main():
+    parser = argparse.ArgumentParser(description="Text to speech tooly")
+    parser.add_argument('-t', '--text', required=True, help='Text to be created into audio speech.')
+    parser.add_argument('-o', '--output', required=False, help='Output path.')
+    args = parser.parse_args()
+    mini_kokoro_tts(text=f"{args.text}", output_path="output.wav" if args.output == None else args.output)
 
 if __name__ == "__main__":
-    print("asdf")
-    if len(sys.argv) > 2:
-        mini_kokoro_tts(text=f"{sys.argv[2]}", output_path="")
+    main()
