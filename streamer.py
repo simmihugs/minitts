@@ -137,3 +137,14 @@ class Streamer:
                 yield final_chunk
                 self.container.close()
 
+                
+    async def generate_audio_chunks_from_file(self, audio_path: str):
+        """
+        generate audio chunks.
+        """
+        try:
+            with open(f"{audio_path}", "rb") as f:
+                while chunk := f.read(1024 * 64):
+                    yield chunk
+        except FileNotFoundError:
+            print(f"path {audio_path} not found")
