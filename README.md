@@ -13,3 +13,8 @@ A minimal test runner for a tts model
       -o OUTPUT, --output OUTPUT
                             Output path.
     ```
+
+## API
+   ```shell
+   uvicorn api:app --reload 
+   ```

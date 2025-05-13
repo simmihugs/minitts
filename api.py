@@ -3,6 +3,7 @@ from speechcreator import SpeechCreator
 from streamer import Streamer
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
 import os
 
 
@@ -14,6 +15,22 @@ class MyRequest(BaseModel):
 streamer = Streamer()
 app = FastAPI()
 
+origins = [
+    "http://localhost:5173",
+    "*"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=['*'],
+    allow_headers=["*"],
+)
+
+@app.get("/api/data")
+async def get_data():
+    return {"message": "data from backend"}
 
 @app.post("/stream-audio-static")
 async def stream_audio_static(request: MyRequest):
