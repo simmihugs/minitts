@@ -1,4 +1,4 @@
-from speechcreator import SpeechCreator
+from api.speechcreator import SpeechCreator
 import argparse
 
 def main():

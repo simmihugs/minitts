@@ -6,8 +6,7 @@ from kokoro import KModel, KPipeline
 import soundfile as sf
 import numpy as np
 import torch
-import argparse
-from consts import MODEL_CONFIG_PATH, MODEL_PTH_PATH, VOICE_PATH, LANGUAGE_CODE, SAMPLE_RATE, REPO_ID
+from api.consts import MODEL_CONFIG_PATH, MODEL_PTH_PATH, VOICE_PATH, LANGUAGE_CODE, SAMPLE_RATE, REPO_ID
 
 class SpeechCreator:
     def __init__(self, debug: bool = False):

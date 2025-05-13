@@ -1,22 +1,15 @@
-from pydantic import BaseModel
-from speechcreator import SpeechCreator
-from streamer import Streamer
+from api.speechcreator import SpeechCreator
+from api.streamer import Streamer
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 import os
-
-
-class MyRequest(BaseModel):
-    text: str
-    output_path: str
-
+from api.models.myrequest import MyRequest
 
 streamer = Streamer()
 app = FastAPI()
 
 origins = [
-    "http://localhost:5173",
     "*"
 ]
 
@@ -34,9 +27,6 @@ async def get_data():
 
 @app.post("/stream-audio-static")
 async def stream_audio_static(request: MyRequest):
-    """
-    stream an audio source in an async way.
-    """
     if not os.path.exists(request.output_path):
         speech_creator = SpeechCreator()
         speech_creator.create_audio(output_path=request.output_path, text=request.text)
